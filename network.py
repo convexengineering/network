@@ -8,10 +8,16 @@ import matplotlib.pyplot as plt
 
 class basicFlow(Model):
 	def setup(N=4):
-		edgeCost = VectorVariable([4,4],'edgeCost',[[10000,140,100,80],
-									[140, 10000,90, 69],
-									[100,90,10000,50],
-									[80,69,50,10000]])
+		edgeCost = VectorVariable([4,4],
+			'edgeCost',[[10000,140,100,80],
+						[140, 10000,90, 69],
+						[100,90,10000,50],
+						[80,69,50,10000]])
+		edgeMaxFlow = VectorVariable([4,4],
+			'edgeMaxFlow',[[4,4,4,4],
+						   [4,4,4,4],
+						   [4,4,4,4],
+						   [4,4,4,4]])
 		flow = VectorVariable([4,4],'flow')
 		source = VectorVariable(4,'source',[10,0,0,0])
 		sink = VectorVariable(4,'sink',[0,3,3,4])
@@ -29,6 +35,8 @@ class basicFlow(Model):
 					inflow[i] <= source[i] + sum(flow[:,i]),
 					outflow[i] >= sink[i] + sum(flow[i,:]),
 					outflow[i] == inflow[i]])
+				for j in range(0,4):
+					constraints += [flow[i,j] <= edgeMaxFlow[i,j]]
 
 		constraints.extend([totalCost >= sum(edgeCost*flow) + 
 			 10**5*sum(outflow) + 10**5*sum(inflow)])
@@ -41,11 +49,15 @@ if __name__ == '__main__':
 	sol = m.localsolve()
 
 	# Visualize the flow
-	g = nx.Graph()
-	flow = sol('flow')
-	nodeNames = ['a','b','c','d']
-	g.add_nodes_from(nodeNames)
+	# g = nx.Graph()
+	# flow = sol('flow')
+	# nodeNames = ['a','b','c','d']
+	# g.add_nodes_from(nodeNames)
 
-	for i in range(0,3):
-		for j in range(0,3):
-			g.add_edge(nodeNames[i],nodeNames[j],flowRate=flow[i,j])
+	# for i in range(0,3):
+	# 	for j in range(0,3):
+	# 		g.add_edge(nodeNames[i],nodeNames[j],weight=flow[i,j])
+
+	# pos = nx.shell_layout(g)
+	# nx.draw_networkx_edge_labels(g,pos)
+	# plt.show()
