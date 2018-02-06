@@ -4,60 +4,105 @@ from gpkit.tools import te_exp_minus1
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+from math import factorial
 
 
 class basicFlow(Model):
 	def setup(N=4):
-		edgeCost = VectorVariable([4,4],
-			'edgeCost',[[10000,140,100,80],
-						[140, 10000,90, 69],
-						[100,90,10000,50],
-						[80,69,50,10000]])
-		edgeMaxFlow = VectorVariable([4,4],
-			'edgeMaxFlow',[[4,4,4,4],
-						   [4,4,4,4],
-						   [4,4,4,4],
-						   [4,4,4,4]])
-		flow = VectorVariable([4,4],'flow')
-		source = VectorVariable(4,'source',[10,0,0,0])
-		sink = VectorVariable(4,'sink',[0,3,3,4])
-		outflow = VectorVariable(4,'outflow')
-		inflow = VectorVariable(4,'inflow')
-		error = VectorVariable(4,'error')
+		edgeCost = VectorVariable([5,5],
+			'edgeCost',[[10000,140,100,80,80],
+						[140, 10000,90, 80, 69],
+						[100,90,10000,50,40],
+						[80,69,50,10000,70],
+						[90,100,80,50,10000]])
+		edgeMaxFlow = VectorVariable([5,5],
+			'edgeMaxFlow',[[4,4,4,4,4],
+						   [4,4,4,4,4],
+						   [4,4,4,4,4],
+						   [4,4,4,4,4],
+						   [4,4,4,4,4]])
+		flow = VectorVariable([5,5],'flow')
+		source = VectorVariable(5,'source',[5,0,0,5,0])
+		sink = VectorVariable(5,'sink',[0.,2,3,0,5])
+		outflow = VectorVariable(5,'outflow')
+		inflow = VectorVariable(5,'inflow')
 		totalCost = Variable('totalCost')
 
 		constraints = []
 
 		with SignomialsEnabled():
 
-			for i in range(0,4):
-				constraints.extend([flow[i,i] == 10**-10,
-					inflow[i] <= source[i] + sum(flow[:,i]),
-					outflow[i] >= sink[i] + sum(flow[i,:]),
-					outflow[i] == inflow[i]])
-				for j in range(0,4):
+			for i in range(0,5):
+				constraints.extend([flow[i,i] == 10**-20,
+					inflow[i] >= source[i] + sum(flow[:,i]),
+					outflow[i] <= sink[i] + sum(flow[i,:]),
+					outflow[i] == inflow[i]
+					])
+				for j in range(0,5):
 					constraints += [flow[i,j] <= edgeMaxFlow[i,j]]
 
 		constraints.extend([totalCost >= sum(edgeCost*flow) + 
-			 10**5*sum(outflow) + 10**5*sum(inflow)])
+			 10**7*sum(outflow) + 10**7*sum(inflow)])
 
 		return constraints
+
+class Node(Model):
+	def setup(self,edgeList):
+		flow = VectorVariable('')
 
 if __name__ == '__main__':
 	m = basicFlow()
 	m = Model(m.variables_byname('totalCost')[0],Bounded(m))
-	sol = m.localsolve()
+	sol = m.localsolve(verbosity=4)
 
-	# Visualize the flow
-	# g = nx.Graph()
-	# flow = sol('flow')
-	# nodeNames = ['a','b','c','d']
-	# g.add_nodes_from(nodeNames)
+	#Visualize the flow
+	g = nx.Graph()
+	flow = sol('flow')
+	sources = sol('source')
+	sinks = sol('sink')
+	nodeNames = ['a','b','c','d','e']
+	g.add_nodes_from(nodeNames)
 
-	# for i in range(0,3):
-	# 	for j in range(0,3):
-	# 		g.add_edge(nodeNames[i],nodeNames[j],weight=flow[i,j])
+	edge_alphas = np.zeros((10,1))
+	edge_weights = np.zeros((10,1))
 
-	# pos = nx.shell_layout(g)
-	# nx.draw_networkx_edge_labels(g,pos)
-	# plt.show()
+	count = 0
+	for i in range(0,5):
+		for j in range(0,5):
+			if j > i:
+				edge_weights[count] = abs(flow[i,j]-flow[j,i])
+				g.add_edge(nodeNames[i],nodeNames[j],weight=10*edge_weights[count,0])
+				count += 1
+
+	pos = nx.shell_layout(g)
+
+	node_sizes = abs(sources - sinks)
+	edge_alphas = edge_weights/max(edge_weights)
+	nodes = nx.draw_networkx_nodes(g,pos,nodesize=node_sizes,nodelist=nodeNames,node_color='b')
+	edges = nx.draw_networkx_edges(g, pos,nodesize=node_sizes,arrowstyle='->',arrowsize=10,width=2,edgecolor='b')
+
+	m = g.number_of_edges()
+
+	plt.axis('off')
+	plt.show()
+
+	# Example code
+# 	G = nx.generators.directed.random_k_out_graph(10, 3, 0.5)
+# pos = nx.layout.spring_layout(G)
+
+# node_sizes = [3 + 10 * i for i in range(len(G))]
+# M = G.number_of_edges()
+# edge_colors = range(2, M + 2)
+# edge_alphas = [(5 + i) / (M + 4) for i in range(M)]
+
+# nodes = nx.draw_networkx_nodes(G, pos, node_size=node_sizes, node_color='blue')
+# edges = nx.draw_networkx_edges(G, pos, node_size=node_sizes, arrowstyle='->',
+#                                arrowsize=10, edge_color=edge_colors,
+#                                edge_cmap=plt.cm.Blues, width=2)
+# # set alpha value for each edge
+# for i in range(M):
+#     edges[i].set_alpha(edge_alphas[i])
+
+# ax = plt.gca()
+# ax.set_axis_off()
+# plt.show()
