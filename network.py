@@ -39,6 +39,15 @@ class Flow(Model):
 
         return constraints
 
+class Node(Model):
+	def setup(self,linkedEdges):
+		source = Variable()
+		sink = Variable()
+
+class Edge(Model):
+	def setup(self,inNode,outNode):
+		edgeFlow = Variable('edgeFlow')
+
 def drawNetwork(sol):
     # Visualize the flow
     g = nx.DiGraph()
@@ -72,15 +81,24 @@ def drawNetwork(sol):
     node_sizes = sources
 
     node_colors = ['r' if i < 0 else 'b' for i in node_sizes]
-    labelDict = {i: i for i in nodeNames}
+    nodeLabelDict = {i: i for i in nodeNames}
+    edgeLabelDict = nx.get_edge_attributes(g,'weight')
+
+    # Deleting zero entries from edges
+    for i in edgeLabelDict.keys():
+    	if edgeLabelDict[i] == 0:
+    		edgeLabelDict.pop(i)
+
+    edgeVals = np.array(edgeLabelDict.values())
 
     edge_alphas = edge_weights / max(edge_weights)
     nodes = nx.draw_networkx_nodes(g, pos, node_size=900 * abs(node_sizes) / max(abs(node_sizes)),
                                    nodelist=nodeNames, node_color=node_colors, label=nodeNames)
     edges = nx.draw_networkx_edges(g, pos, node_size=900 * abs(node_sizes) / max(abs(node_sizes)),
                                    arrows=True,
-                                   width=10 * abs(edge_weights) / max(abs(edge_weights)), edgecolor='b')
-    labels = nx.draw_networkx_labels(g, pos, labels=labelDict)
+                                   width=10 * abs(edgeVals) / max(abs(edgeVals)), edgecolor='b')
+    nodeLabels = nx.draw_networkx_labels(g, pos, labels=nodeLabelDict,font_size=16)
+    edgeLabels = nx.draw_networkx_edge_labels(g, pos, edge_labels=edgeLabelDict, font_size = 14)
     plt.axis('off')
     plt.show()
 
@@ -118,13 +136,13 @@ if __name__ == '__main__':
     m_relax = relaxed_constants(m, None)
 
     # Solution
-    sol = m.localsolve(verbosity=4, reltol=10**-4)
+    #sol = m.localsolve(verbosity=4, reltol=10**-4)
     sol_relax = m_relax.localsolve(verbosity=4, reltol=10**-4)
 
     # Flow comparison
-    flow = np.round(sol('flow'), 5)
+    #flow = np.round(sol('flow'), 5)
     flow_relax = np.round(sol_relax('flow'), 5)
 
     # Plotting
-    g = drawNetwork(sol)
+    #g = drawNetwork(sol)
     g = drawNetwork(sol_relax)
