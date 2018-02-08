@@ -26,16 +26,16 @@ class Flow(Model):
         with SignomialsEnabled():
 
             for i in range(0, N):
-                constraints.extend([flow[i, i] == 10**-20,
-                                    inflow[i] >= source[i] + sum(flow[:, i]),
-                                    outflow[i] <= sink[i] + sum(flow[i, :]),
+                constraints.extend([flow[i,i] == 10**(-20),
+                					inflow[i] <= source[i] + sum(flow[:, i]),
+                                    outflow[i] >= sink[i] + sum(flow[i, :]),
                                     outflow[i] == inflow[i]
                                     ])
                 for j in range(0, N):
                     constraints += [flow[i, j] <= edgeMaxFlow[i, j]]
 
         constraints.extend([totalCost >= sum(edgeCost * flow) +
-                            10**7 * sum(outflow) + 10**7 * sum(inflow)])
+                            10**7 * sum(inflow) + 10**7 * sum(outflow)])
 
         return constraints
 
@@ -137,11 +137,10 @@ if __name__ == '__main__':
 
     # Solution
     #sol = m.localsolve(verbosity=4, reltol=10**-4)
-    sol_relax = m_relax.localsolve(verbosity=4, reltol=10**-4)
+    sol = m_relax.localsolve(verbosity=4, reltol=10**-2,iteration_limit=100)
 
     # Flow comparison
-    #flow = np.round(sol('flow'), 5)
-    flow_relax = np.round(sol_relax('flow'), 5)
+    flow = np.round(sol('flow'), 5)
 
     # Plotting
     #g = drawNetwork(sol)
