@@ -7,18 +7,15 @@ import matplotlib.pyplot as plt
 from math import factorial
 from relaxed_constants import relaxed_constants, post_process
 
-
 class Flow(Model):
-    def setup(self,N):
+    def setup(self, N):
         edgeCost = VectorVariable([N, N],
-                                  'edgeCost',edgeCosts)
+                                  'edgeCost')
         edgeMaxFlow = VectorVariable([N, N],
-                                     'edgeMaxFlow',edgeMaxFlows)
+                                     'edgeMaxFlow')
         flow = VectorVariable([N, N], 'flow')
-        source = VectorVariable(N, 'source', sources)
-        sink = VectorVariable(N, 'sink', sinks)
-        outflow = VectorVariable(N, 'outflow')
-        inflow = VectorVariable(N, 'inflow')
+        source = VectorVariable(N, 'source')
+        sink = VectorVariable(N, 'sink')
         totalCost = Variable('totalCost')
 
         constraints = []
@@ -26,17 +23,13 @@ class Flow(Model):
         with SignomialsEnabled():
 
             for i in range(0, N):
-                constraints.extend([flow[i,i] == 10**(-20),
-                					inflow[i] <= source[i] + sum(flow[:, i]),
-                                    outflow[i] >= sink[i] + sum(flow[i, :]),
-                                    outflow[i] == inflow[i]
-                                    ])
+                constraints.extend([sink[i] + sum(flow[i, :]) >= source[i] + sum(flow[:, i])])
                 for j in range(0, N):
                     constraints += [flow[i, j] <= edgeMaxFlow[i, j]]
-
-        constraints.extend([totalCost >= sum(edgeCost * flow) +
-                            10**7 * sum(inflow) + 10**7 * sum(outflow)])
-
+            for i in range(0, N):
+                for j in range(i + 1, N):
+                    constraints.extend([flow[i, j] * flow[j, i] <= 1e-5])
+        constraints.extend([totalCost >= sum(edgeCost * flow)])
         return constraints
 
 class Node(Model):
@@ -81,7 +74,7 @@ def drawNetwork(sol):
     node_sizes = sources
 
     node_colors = ['r' if i < 0 else 'b' for i in node_sizes]
-    nodeLabelDict = {i: i for i in nodeNames}
+    nodeLabelDict = nx.get_node_attributes(g,'weight')
     edgeLabelDict = nx.get_edge_attributes(g,'weight')
 
     # Deleting zero entries from edges
@@ -93,12 +86,13 @@ def drawNetwork(sol):
 
     edge_alphas = edge_weights / max(edge_weights)
     nodes = nx.draw_networkx_nodes(g, pos, node_size=900 * abs(node_sizes) / max(abs(node_sizes)),
-                                   nodelist=nodeNames, node_color=node_colors, label=nodeNames)
+                                   nodelist=nodeNames, node_color=node_colors, label=nodeLabelDict)
     edges = nx.draw_networkx_edges(g, pos, node_size=900 * abs(node_sizes) / max(abs(node_sizes)),
-                                   arrows=True,
+                                   edgelist = edgeLabelDict.keys(),arrows=True,
                                    width=10 * abs(edgeVals) / max(abs(edgeVals)), edgecolor='b')
     nodeLabels = nx.draw_networkx_labels(g, pos, labels=nodeLabelDict,font_size=16)
-    edgeLabels = nx.draw_networkx_edge_labels(g, pos, edge_labels=edgeLabelDict, font_size = 14)
+    edgeLabels = nx.draw_networkx_edge_labels(g, pos, label_pos=0.2, 
+    								edge_labels=edgeLabelDict, font_size=14, font_color='m')
     plt.axis('off')
     plt.show()
 
@@ -107,19 +101,36 @@ def drawNetwork(sol):
 
 if __name__ == '__main__':
 
-    N = 5
-    edgeCosts = [[10000, 140, 100, 80, 80],
-                 [140, 10000, 90, 80, 69],
-                 [100, 90, 10000, 50, 40],
-                 [80, 69, 50, 10000, 70],
-                 [90, 100, 80, 50, 10000]]
-    edgeMaxFlows =  [[4, 4, 4, 4, 4],
-                     [4, 4, 4, 4, 4],
-                     [4, 4, 4, 4, 4],
-                     [4, 4, 4, 4, 4],
-                     [4, 4, 4, 4, 4]]
-    sources = [5, 0, 0, 5, 0]
-    sinks = [0., 2, 3, 0, 5]
+    # N = 5
+    # edgeCosts = [[0, 140, 100, 80, 80],
+    #              [140, 0, 90, 80, 69],
+    #              [100, 90, 0, 50, 40],
+    #              [80, 69, 50, 0, 70],
+    #              [90, 100, 80, 50, 0]]
+    # edgeMaxFlows =  [[4, 4, 4, 4, 4],
+    #                  [4, 4, 4, 4, 4],
+    #                  [4, 4, 4, 4, 4],
+    #                  [4, 4, 4, 4, 4],
+    #                  [4, 4, 4, 4, 4]]
+    # sources = [5, 0, 0, 5, 0]
+    # sinks = [0., 2, 3, 0, 5]
+
+    N = 6
+    edgeCosts = [[0, 140, 100, 80, 80, 70],
+                 [140, 0, 90, 80, 69, 80],
+                 [100, 90, 0, 50, 40, 90],
+                 [80, 69, 50, 0, 70, 60],
+                 [90, 100, 80, 50, 0, 67],
+                 [80, 64, 79, 80, 70, 0]]
+
+    edgeMaxFlows = [[4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4]]
+    sources = [5, 0, 0, 5, 0, 0]
+    sinks = [0, 3, 4, 0, 3, 0]
 
     m = Flow(N)
 
@@ -132,16 +143,14 @@ if __name__ == '__main__':
 
     m = Model(m.variables_byname('totalCost')[0], Bounded(m))
 
-    # Note: convergence issues in SP solve without relaxed_constants
-    m_relax = relaxed_constants(m, None)
+    # Note: potential convergence issues with or without relaxed_constants. 
+    #m = relaxed_constants(m, None)
 
     # Solution
-    #sol = m.localsolve(verbosity=4, reltol=10**-4)
-    sol = m_relax.localsolve(verbosity=4, reltol=10**-2,iteration_limit=100)
+    sol = m.localsolve(verbosity=4, reltol=10**-4,iteration_limit=100)
 
     # Flow comparison
     flow = np.round(sol('flow'), 5)
 
     # Plotting
-    #g = drawNetwork(sol)
-    g = drawNetwork(sol_relax)
+    g = drawNetwork(sol)
