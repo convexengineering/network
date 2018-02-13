@@ -1,6 +1,6 @@
 import numpy as np
 import random as rn
-from matplotlib import pyplot as plt
+from matplotlib.pyplot as plt
 import csv
 import collections
 
@@ -26,8 +26,6 @@ if __name__ == '__main__':
 	points, euclidianDistances = genMST(xRange,yRange,Npoints)
 	np.savetxt('points.csv', (points), delimiter=',')
 	np.savetxt('eucDist.csv', (euclidianDistances), delimiter=',')
-
-
 
 	plt.xlim(xRange)
 	plt.ylim(yRange)
