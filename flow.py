@@ -18,7 +18,7 @@ class Flow(Model):
         with SignomialsEnabled():
 
             for i in range(0, N):
-                constraints.extend([sink[i] + sum(flow[i, :]) <= source[i] + sum(flow[:, i]),])
+                constraints.extend([sink[i] + sum(flow[i, :]) <= source[i] + sum(flow[:, i])])
                 for j in range(0, N):
                     constraints += [flow[i, j]   <= connect[i,j]*edgeMaxFlow[i, j],
                                     connect[i,j] <= 1]
