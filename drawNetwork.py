@@ -2,13 +2,13 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
-def drawNetwork(sol):
+def drawNetwork(sol,points = None):
     # Visualize the flow
     g = nx.DiGraph()
-    flow = np.round(sol('flow'), 5)
+    flow = np.round(sol('flow'), 3)
     Nnodes = len(flow)
     sources = np.round([sum(flow[i, :]) - sum(flow[:, i])
-                        for i in range(Nnodes)], 5)
+                        for i in range(Nnodes)], 3)
 
     Nedges = int((1 + (Nnodes - 1)) * (Nnodes - 1) * .5)
     nodeNames = [str(i) for i in range(1, Nnodes + 1)]
@@ -30,7 +30,10 @@ def drawNetwork(sol):
                                weight=abs(edge_weights[count]))
                 count += 1
 
-    pos = nx.shell_layout(g)
+    if points == None:
+        pos = nx.shell_layout(g)
+    else:
+        pos = points
 
     node_sizes = sources
 
