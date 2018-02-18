@@ -11,7 +11,8 @@ from MST import MST
 from flow import Flow
 from flowElems import Node,Edge
 from genData import *
-from solveNetwork import *
+from solveNetworkGP import *
+from solveNetworkLP import *
 
 if __name__ == '__main__':
 
@@ -71,27 +72,16 @@ if __name__ == '__main__':
 #     sinks        = np.zeros(N)
 #     sinks[1:]    = 1.
 
-    m = Flow(N)
-
-    m.substitutions.update({
-    	'edgeCost':       edgeCosts,
-    	'edgeMaxFlow':    edgeMaxFlows,
-    	'source'     :    sources,
-    	'sink'       :    sinks,
-    	})
-
-    m = Model(m.variables_byname('totalCost')[0], Bounded(m))
-
-    # Note: potential convergence issues with or without relaxed_constants. 
-    #m = relaxed_constants(m, None)
-
-    # Solution
-    sol = m.localsolve(verbosity=4, reltol=10**-5,iteration_limit=100)
+    # GP and LP Solutions
+    solGP = solveNetworkGP(N,edgeCosts,edgeMaxFlows,sources,sinks)
+    solLP = solveNetworkLP(N,edgeCosts,edgeMaxFlows,sources,sinks)
 
     # Flow comparison
-    flow = np.round(sol('flow'), 3)
-    connectivity = np.round(sol('connectivity'), 3)
+    flowGP = np.round(solGP('flow'), 3)
+    connectivityGP = np.round(solGP('connectivity'), 3)
 
     # Plotting
-    g = drawNetwork(sol, points = pointDict)
+    g = drawNetwork(solGP, points = pointDict)
+    g = drawNetwork(solLP, points = pointDict)
+
 
