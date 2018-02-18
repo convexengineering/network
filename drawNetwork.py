@@ -5,7 +5,11 @@ import matplotlib.pyplot as plt
 def drawNetwork(sol,points = None):
     # Visualize the flow
     g = nx.DiGraph()
-    flow = np.round(sol('flow'), 3)
+    try:
+        flow = np.round(sol('flow'), 3)
+    except:
+        flow = np.round(sol['flow'], 3)
+
     Nnodes = len(flow)
     sources = np.round([sum(flow[i, :]) - sum(flow[:, i])
                         for i in range(Nnodes)], 3)
