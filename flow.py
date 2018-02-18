@@ -20,10 +20,10 @@ class Flow(Model):
             for i in range(0, N):
                 constraints.extend([sink[i] + sum(flow[i, :]) <= source[i] + sum(flow[:, i])])
                 for j in range(0, N):
-                    constraints += [flow[i, j]   <= connect[i,j]*edgeMaxFlow[i, j],
-                                    connect[i,j] <= 1]
+                    constraints += [flow[i, j] <= connect[i,j]*edgeMaxFlow[i, j],
+                                    connect[i,j] <= 1.]
             for i in range(0, N):
                 for j in range(i + 1, N):
-                    constraints.extend([connect[i, j] * connect[j, i] <= 1e-5])
-        constraints.extend([totalCost >= np.prod(edgeCost * connect) + np.prod(edgeCost * flow)])
+                    constraints.extend([connect[i, j] * connect[j, i] <= 1e-20])
+        constraints.extend([totalCost >= np.sum(edgeCost * flow)])
         return constraints
