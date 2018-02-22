@@ -25,5 +25,5 @@ class Flow(Model):
             for i in range(0, N):
                 for j in range(i + 1, N):
                     constraints.extend([connect[i, j] * connect[j, i] <= 1e-20])
-        constraints.extend([totalCost >= np.sum(edgeCost * flow)])
+        constraints.extend([totalCost >= np.sum(edgeCost * flow) + 10*np.sum(edgeCost * connect)])
         return constraints
