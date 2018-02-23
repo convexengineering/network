@@ -24,7 +24,7 @@ if __name__ == '__main__':
                  [100, 90, 0, 50, 40],
                  [80, 69, 50, 0, 70],
                  [90, 100, 80, 50, 0]]
-    edgeMaxFlows =  4.*np.array([[1., 1., 1., 1., 1.],
+    edgeMaxFlows =  3.*np.array([[1., 1., 1., 1., 1.],
                      [1., 1., 1., 1., 1.],
                      [1., 1., 1., 1., 1.],
                      [1., 1., 1., 1., 1.],
@@ -86,8 +86,10 @@ if __name__ == '__main__':
     g = drawNetwork(solGP, points = pointDict)
     g = drawNetwork(solLP, points = pointDict)
 
-    # Printing relative costs
-    print solGP('edgeCost')*solGP('flow')
-    print prod(solGP('slack'))
+    # Printing relative costs and slack
+    print np.round(solGP('edgeCost')*solGP('flow'),3)
+    print np.prod(solGP('slack'))
+    print 'Slack: ' + str(solGP('slack'))
+    print 'Connectivity: ' + str(np.round(solGP('connectivity'),3))
 
 
