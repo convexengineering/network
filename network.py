@@ -31,8 +31,8 @@ if __name__ == '__main__':
                      [1., 1., 1., 1., 1.]])
     sources = [5, 0, 0, 5, 0]
     sinks = [0., 2, 3, 0, 5]
-    #sources = [1, 0, 0, 0, 0]
-    #sinks = [0., 0, 0, 0, 1]
+    # sources = [1, 0, 0, 0, 0]
+    # sinks = [0., 0, 0, 0, 1]
 
     # N = 6
     # points = np.genfromtxt('6points.csv',delimiter=',')
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # sinks = [0, 3, 4, 0, 3, 0]
 
 
-#     N=6
+#     N=20
 #     xRange = (-1, 1)
 #     yRange = (-1, 1)
 #     genData(xRange,yRange,N)
@@ -65,7 +65,6 @@ if __name__ == '__main__':
 #     eucDist    = np.genfromtxt('eucDist.csv',delimiter=',')
 #     edgeCosts  = np.genfromtxt('edgeCosts.csv',delimiter=',')
 #     edgeMaxFlows = np.ones((N,N)) * N
-# #    connect      = np.ones((N,N))
 #     sources = np.genfromtxt('sources.csv',delimiter=',')
 #     sinks = np.genfromtxt('sinks.csv',delimiter=',')
 
@@ -87,8 +86,8 @@ if __name__ == '__main__':
     g = drawNetwork(solLP, points = pointDict)
 
     # Printing relative costs and slack
-    print np.round(solGP('edgeCost')*solGP('flow'),3)
-    print np.prod(solGP('slack'))
+    print 'Flow Cost: ' + str(np.round(sum(sum(solGP('edgeCost')*solGP('flow'))),3))
+    print 'Slack Cost: ' + str(np.prod(solGP('slack')))
     print 'Slack: ' + str(solGP('slack'))
     print 'Connectivity: ' + str(np.round(solGP('connectivity'),3))
 

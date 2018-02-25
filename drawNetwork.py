@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
-def drawNetwork(sol,points = None):
+def drawNetwork(sol,points = []):
     # Visualize the flow
     g = nx.DiGraph()
     try:
@@ -34,7 +34,7 @@ def drawNetwork(sol,points = None):
                                weight=abs(edge_weights[count]))
                 count += 1
 
-    if points == None:
+    if points == []:
         pos = nx.shell_layout(g)
     else:
         pos = points
