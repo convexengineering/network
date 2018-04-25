@@ -1,4 +1,5 @@
 from gpkit import Model, Variable, VectorVariable, SignomialsEnabled
+from gpkit.constraints.tight import Tight
 import numpy as np
 
 class Flow(Model):
@@ -20,8 +21,10 @@ class Flow(Model):
         with SignomialsEnabled():
 
             for i in range(0, N):
-                constraints.extend([sink[i] + sum(flow[i, :]) <= slack[i]*(source[i] + sum(flow[:, i])),
-                                    slack[i] >= 1])
+                constraints.extend([
+                    Tight([sink[i] + sum(flow[i, :]) <= slack[i]*(source[i] + sum(flow[:, i]))]),
+                    Tight([slack[i] >= 1])
+                    ])
                 for j in range(0, N):
                     constraints += [flow[i, j] <= connect[i,j]*edgeMaxFlow[i, j],
                                     edgeMaxCost >= edgeCost[i,j] * flow[i,j],
