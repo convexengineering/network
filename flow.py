@@ -9,12 +9,12 @@ class Flow(Model):
         edgeMaxFlow = VectorVariable([N, N],
                                      'edgeMaxFlow')
         edgeMaxCost = Variable('edgeMaxCost')
+        slackCost = Variable('slackCost',1000)
         connect = VectorVariable([N,N],'connectivity')
         flow = VectorVariable([N, N], 'flow')
         source = VectorVariable(N, 'source')
         sink = VectorVariable(N, 'sink')
         slack = VectorVariable(N, 'slack')
-        totalCost = Variable('totalCost')
 
         constraints = []
 
@@ -28,9 +28,9 @@ class Flow(Model):
                 for j in range(0, N):
                     constraints += [flow[i, j] <= connect[i,j]*edgeMaxFlow[i, j],
                                     edgeMaxCost >= edgeCost[i,j] * flow[i,j],
-                                    connect[i,j] <= 1.,]
+                                    connect[i,j] <= 1.,
+                                    flow[i,j] >= 1e-20]
             for i in range(0, N):
                 for j in range(i + 1, N):
                     constraints.extend([connect[i, j] * connect[j, i] <= 1e-20])
-        constraints.extend([totalCost >= np.sum(edgeCost * flow) + 1e3*np.prod(slack)])
         return constraints
