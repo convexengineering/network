@@ -13,6 +13,7 @@ from flowElems import Node,Edge
 from genData import *
 from solveNetworkGP import *
 from solveNetworkLP import *
+from gpkit.interactive.sankey import Sankey
 
 if __name__ == '__main__':
 
@@ -54,19 +55,19 @@ if __name__ == '__main__':
     # sinks = [0, 3, 4, 0, 3, 0]
 
 
-#     N=20
-#     xRange = (-1, 1)
-#     yRange = (-1, 1)
-#     genData(xRange,yRange,N)
+    # N=10
+    # xRange = (-1, 1)
+    # yRange = (-1, 1)
+    # genData(xRange,yRange,N)
 
-#     points = np.genfromtxt('points.csv',delimiter=',')
-#     pointDict = {str(i):points[i-1,:] for i in range(1,N+1)}
+    # points = np.genfromtxt('points.csv',delimiter=',')
+    # pointDict = {str(i):points[i-1,:] for i in range(1,N+1)}
 
-#     eucDist    = np.genfromtxt('eucDist.csv',delimiter=',')
-#     edgeCosts  = np.genfromtxt('edgeCosts.csv',delimiter=',')
-#     edgeMaxFlows = np.ones((N,N)) * N
-#     sources = np.genfromtxt('sources.csv',delimiter=',')
-#     sinks = np.genfromtxt('sinks.csv',delimiter=',')
+    # eucDist    = np.genfromtxt('eucDist.csv',delimiter=',')
+    # edgeCosts  = np.genfromtxt('edgeCosts.csv',delimiter=',')
+    # edgeMaxFlows = np.ones((N,N)) * N
+    # sources = np.genfromtxt('sources.csv',delimiter=',')
+    # sinks = np.genfromtxt('sinks.csv',delimiter=',')
 
 #     sources      = np.zeros(N)
 #     sources[0]   = N-1
@@ -74,12 +75,28 @@ if __name__ == '__main__':
 #     sinks[1:]    = 1.
 
     # GP and LP Solutions
-    solGP = solveNetworkGP(N,edgeCosts,edgeMaxFlows,sources,sinks)
+
+    m = Flow(N)
+    m.substitutions.update({
+        'edgeCost':       edgeCosts,
+        'edgeMaxFlow':    edgeMaxFlows,
+        'source'     :    sources,
+        'sink'       :    sinks,
+        })
+    m.substitutions.update({'slackCost': 1000})#['sweep',np.linspace(100,10000,10)]})
+    m.cost = m['edgeMaxCost'] + np.sum(m['edgeCost'] * m['flow']) + m['slackCost']*np.prod(m['slack'])
+    m = relaxed_constants(m)
+    solGP = m.localsolve(verbosity=3)
     solLP = solveNetworkLP(N,edgeCosts,edgeMaxFlows,sources,sinks)
+
+    # solGP = solveNetworkGP(N,edgeCosts,edgeMaxFlows,sources,sinks)
+    # solLP = solveNetworkLP(N,edgeCosts,edgeMaxFlows,sources,sinks)
 
     # Flow comparison
     flowGP = np.round(solGP('flow'), 3)
     connectivityGP = np.round(solGP('connectivity'), 3)
+    flowLP = np.round(solLP['flow'], 3)
+    #connectivityLP = 
 
     # Plotting
     g = drawNetwork(solGP, points = pointDict)
@@ -87,7 +104,7 @@ if __name__ == '__main__':
 
     # Printing relative costs and slack
     print 'Flow Cost: ' + str(np.round(sum(sum(solGP('edgeCost')*solGP('flow'))),3))
-    print 'Slack Cost: ' + str(np.prod(solGP('slack')))
+    print 'Slack Cost: ' + str(solGP('slackCost')*np.prod(solGP('slack')))
     print 'Slack: ' + str(solGP('slack'))
     print 'Connectivity: ' + str(np.round(solGP('connectivity'),3))
 

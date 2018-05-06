@@ -36,7 +36,7 @@ def genData(xRange, yRange, Npoints):
 if __name__ == '__main__':
 	xRange = (-1, 1)
 	yRange = (-1, 1)
-	Npoints = 10
+	Npoints = 20
 
 	points, euclidianDistances, edgeCosts, sources, sinks = genData(xRange,yRange,Npoints)
 	plt.xlim(xRange)
