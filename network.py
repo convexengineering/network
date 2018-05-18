@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # sinks = [0, 3, 4, 0, 3, 0]
 
 
-    # N=10
+    # N=5
     # xRange = (-1, 1)
     # yRange = (-1, 1)
     # genData(xRange,yRange,N)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         'sink'       :    sinks,
         })
     m.substitutions.update({'slackCost': 1000})#['sweep',np.linspace(100,10000,10)]})
-    m.cost = m['edgeMaxCost'] + np.sum(m['edgeCost'] * m['flow']) + m['slackCost']*np.prod(m['slack'])
+    m.cost = np.sum(m['edgeCost'] * m['flow']) + m['slackCost']*np.prod(m['slack'])
     m = relaxed_constants(m)
     solGP = m.localsolve(verbosity=3)
     solLP = solveNetworkLP(N,edgeCosts,edgeMaxFlows,sources,sinks)
