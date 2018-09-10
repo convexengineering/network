@@ -12,8 +12,8 @@ def solveNetworkGP(N,edgeCosts,edgeMaxFlows,sources,sinks):
         'source'     :    sources,
         'sink'       :    sinks,
         })
-    m.substitutions.update({'slackCost': 1000})#['sweep',np.linspace(100,10000,10)]})
-    m.cost = np.sum(m['edgeCost'] * m['flow']) + m['slackCost']*np.prod(m['slack'])
+    m.substitutions.update({'slackCost': 1e8})#['sweep',np.linspace(100,10000,10)]})
+    m.cost = np.sum(m['edgeCost'] * m['flow'])*np.prod(m['slack']) + m['slackCost']*np.prod(m['slack'])
     m = relaxed_constants(m)
     sol = m.localsolve(verbosity=4, reltol=10**-5,iteration_limit=100)
     return sol

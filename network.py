@@ -20,11 +20,11 @@ if __name__ == '__main__':
     N = 5
     points = np.genfromtxt('6points.csv',delimiter=',')
     pointDict = {str(i):points[i-1,:] for i in range(1,N+1)}
-    edgeCosts = [[0, 140, 100, 80, 80],
-                 [140, 0, 90, 80, 69],
-                 [100, 90, 0, 50, 40],
-                 [80, 69, 50, 0, 70],
-                 [90, 100, 80, 50, 0]]
+    edgeCosts = [[1e-20, 140, 100, 80, 80],
+                 [140, 1e-20, 90, 80, 69],
+                 [100, 90, 1e-20, 50, 40],
+                 [80, 69, 50, 1e-20, 70],
+                 [90, 100, 80, 50, 1e-20]]
     edgeMaxFlows =  3.*np.array([[1., 1., 1., 1., 1.],
                      [1., 1., 1., 1., 1.],
                      [1., 1., 1., 1., 1.],
@@ -55,14 +55,14 @@ if __name__ == '__main__':
     # sinks = [0, 3, 4, 0, 3, 0]
 
 
-    # N=5
+    # N=10
     # xRange = (-1, 1)
     # yRange = (-1, 1)
     # genData(xRange,yRange,N)
-
+    #
     # points = np.genfromtxt('points.csv',delimiter=',')
     # pointDict = {str(i):points[i-1,:] for i in range(1,N+1)}
-
+    #
     # eucDist    = np.genfromtxt('eucDist.csv',delimiter=',')
     # edgeCosts  = np.genfromtxt('edgeCosts.csv',delimiter=',')
     # edgeMaxFlows = np.ones((N,N)) * N
@@ -83,10 +83,11 @@ if __name__ == '__main__':
         'source'     :    sources,
         'sink'       :    sinks,
         })
-    m.substitutions.update({'slackCost': 1000})#['sweep',np.linspace(100,10000,10)]})
-    m.cost = np.sum(m['edgeCost'] * m['flow']) + m['slackCost']*np.prod(m['slack'])
-    m = relaxed_constants(m)
-    solGP = m.localsolve(verbosity=3)
+    m.substitutions.update({'slackCost':1000}) #['sweep',np.linspace(100,10000,10)]})
+    m.cost = np.sum(m['edgeCost'] * m['flow'])# + m['slackCost']*np.prod(m['slack'])
+    #m = relaxed_constants(m)
+    m = Model(m.cost, Bounded(m),m.substitutions)
+    solGP = m.localsolve(verbosity=3)#    , reltol=10^-4)
     solLP = solveNetworkLP(N,edgeCosts,edgeMaxFlows,sources,sinks)
 
     # solGP = solveNetworkGP(N,edgeCosts,edgeMaxFlows,sources,sinks)
@@ -108,4 +109,6 @@ if __name__ == '__main__':
     print 'Slack: ' + str(solGP('slack'))
     print 'Connectivity: ' + str(np.round(solGP('connectivity'),3))
 
+    # Printing sweep solution
 
+    plt.plot(solGP('slackCost'),solGP['cost'])
