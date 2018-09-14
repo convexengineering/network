@@ -2,7 +2,8 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
-def drawNetwork(sol,points = []):
+
+def drawNetwork(sol, points=[]):
     # Visualize the flow
     g = nx.DiGraph()
     try:
@@ -42,13 +43,13 @@ def drawNetwork(sol,points = []):
     node_sizes = sources
 
     node_colors = ['r' if i < 0 else 'b' for i in node_sizes]
-    nodeLabelDict = nx.get_node_attributes(g,'weight')
-    edgeLabelDict = nx.get_edge_attributes(g,'weight')
+    nodeLabelDict = nx.get_node_attributes(g, 'weight')
+    edgeLabelDict = nx.get_edge_attributes(g, 'weight')
 
     # Deleting zero entries from edges
     for i in edgeLabelDict.keys():
-    	if edgeLabelDict[i] == 0:
-    		edgeLabelDict.pop(i)
+        if edgeLabelDict[i] == 0:
+            edgeLabelDict.pop(i)
 
     edgeVals = np.array(edgeLabelDict.values())
 
@@ -56,11 +57,11 @@ def drawNetwork(sol,points = []):
     nodes = nx.draw_networkx_nodes(g, pos, node_size=900 * abs(node_sizes) / max(abs(node_sizes)),
                                    nodelist=nodeNames, node_color=node_colors, label=nodeLabelDict)
     edges = nx.draw_networkx_edges(g, pos, node_size=900 * abs(node_sizes) / max(abs(node_sizes)),
-                                   edgelist = edgeLabelDict.keys(),arrows=True,
+                                   edgelist=edgeLabelDict.keys(), arrows=True,
                                    width=10 * abs(edgeVals) / max(abs(edgeVals)), edgecolor='b')
-    nodeLabels = nx.draw_networkx_labels(g, pos, labels=nodeLabelDict,font_size=16)
-    edgeLabels = nx.draw_networkx_edge_labels(g, pos, label_pos=0.2, 
-    								edge_labels=edgeLabelDict, font_size=14, font_color='m')
+    nodeLabels = nx.draw_networkx_labels(g, pos, labels=nodeLabelDict, font_size=16)
+    edgeLabels = nx.draw_networkx_edge_labels(g, pos, label_pos=0.2,
+                                              edge_labels=edgeLabelDict, font_size=14, font_color='m')
     plt.axis('off')
     plt.show()
 
