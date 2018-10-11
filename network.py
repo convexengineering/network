@@ -86,7 +86,7 @@ if __name__ == '__main__':
     m.substitutions.update({'slackCost':1000}) #['sweep',np.linspace(100,10000,10)]})
     m.cost = np.sum(m['edgeCost'] * m['flow'])# + m['slackCost']*np.prod(m['slack'])
     #m = relaxed_constants(m)
-    m = Model(m.cost, Bounded(m),m.substitutions)
+    m = Model(m.cost, Bounded(m),m.substitutions, allow_missingbounds = True)
     solGP = m.localsolve(verbosity=3)#    , reltol=10^-4)
     solLP = solveNetworkLP(N,edgeCosts,edgeMaxFlows,sources,sinks)
 
