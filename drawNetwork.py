@@ -1,3 +1,4 @@
+from gpkit import solution_array as sa
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,10 +7,12 @@ import matplotlib.pyplot as plt
 def drawNetwork(sol, points=[]):
     # Visualize the flow
     g = nx.DiGraph()
-    try:
+    if type(sol) is sa.SolutionArray:
         flow = np.round(sol('flow'), 3)
-    except:
+    elif type(sol) is dict:
         flow = np.round(sol['flow'], 3)
+    else:
+        raise TypeError(f"Solution of type {type(sol)} is invalid.")
 
     Nnodes = len(flow)
     sources = np.round([sum(flow[i, :]) - sum(flow[:, i])
@@ -47,18 +50,18 @@ def drawNetwork(sol, points=[]):
     edgeLabelDict = nx.get_edge_attributes(g, 'weight')
 
     # Deleting zero entries from edges
-    for i in edgeLabelDict.keys():
+    for i in list(edgeLabelDict.keys()):
         if edgeLabelDict[i] == 0:
             edgeLabelDict.pop(i)
 
-    edgeVals = np.array(edgeLabelDict.values())
+    edgeVals = np.array(list(edgeLabelDict.values()))
 
     edge_alphas = edge_weights / max(edge_weights)
     nodes = nx.draw_networkx_nodes(g, pos, node_size=900 * abs(node_sizes) / max(abs(node_sizes)),
                                    nodelist=nodeNames, node_color=node_colors, label=nodeLabelDict)
     edges = nx.draw_networkx_edges(g, pos, node_size=900 * abs(node_sizes) / max(abs(node_sizes)),
-                                   edgelist=edgeLabelDict.keys(), arrows=True,
-                                   width=10 * abs(edgeVals) / max(abs(edgeVals)), edgecolor='b')
+                                   edgelist=list(edgeLabelDict.keys()), arrows=True,
+                                   width=10 * abs(edgeVals) / max(abs(edgeVals)), edge_color='b')
     nodeLabels = nx.draw_networkx_labels(g, pos, labels=nodeLabelDict, font_size=16)
     edgeLabels = nx.draw_networkx_edge_labels(g, pos, label_pos=0.2,
                                               edge_labels=edgeLabelDict, font_size=14, font_color='m')

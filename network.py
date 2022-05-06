@@ -13,7 +13,6 @@ from flowElems import Node, Edge
 from genData import *
 from solveNetworkGP import *
 from solveNetworkLP import *
-from gpkit.interactive.sankey import Sankey
 
 if __name__ == '__main__':
     N = 5
@@ -86,7 +85,7 @@ if __name__ == '__main__':
     m.substitutions.update({'slackCost': 50})  # ['sweep',np.linspace(100,10000,10)]})
     m.cost = np.sum(m['edgeCost'] * m['flow'])*(1 + m['slackCost']*np.prod(m['slackOne'])*np.prod(m['slackTwo']))  # + 10000*np.prod(m['slackOne']) + 10000*np.prod(m['slackTwo'])
     # m = relaxed_constants(m)
-    solGP = m.localsolve(verbosity=3, reltol=1e-8, iteration_limit=500)
+    solGP = m.localsolve(verbosity=3, reltol=1e-7, iteration_limit=100, pccp_penalty=5)
     solLP = solveNetworkLP(N, edgeCosts, edgeMaxFlows, sources, sinks)
 
     # solGP = solveNetworkGP(N,edgeCosts,edgeMaxFlows,sources,sinks)
